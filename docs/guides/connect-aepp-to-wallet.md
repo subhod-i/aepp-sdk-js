@@ -79,17 +79,13 @@ methods: {
 
 ## 4a. Connect to a wallet
 
-Append method for wallet connection
+Append method for wallet connection.
 
-```js
-async connect(wallet) {
-  await this.aeSdk.connectToWallet(wallet.info, wallet.getConnection())
-  this.connectedAccounts = await this.aeSdk.subscribeAddress('subscribe', 'connected')
-  this.address = await this.aeSdk.address()
-  this.balance = await this.aeSdk.getBalance(this.address).catch(() => '0')
-  this.nodeInfo = await this.aeSdk.getNodeInfo()
-}
-```
+https://github.com/aeternity/aepp-sdk-js/blob/develop/examples/browser/aepp/src/Connect.vue#L83-L91
+
+## 4aa. Connect using HW
+
+[Connect moethod](../../examples/browser/aepp/src/Connect.vue#L83-L91)
 
 ## 4b. Connect to a wallet and use Wallet's node for on chain communications
 
