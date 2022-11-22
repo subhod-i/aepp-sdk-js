@@ -25,7 +25,16 @@ import {
   handleUnexpectedMessage,
 } from './handlers';
 import {
-  notify, call, SignTx, ChannelState, ChannelOptions, ChannelMessage, ChannelFsm, changeState, emit,
+  notify,
+  call,
+  SignTx,
+  ChannelState,
+  ChannelOptions,
+  ChannelMessage,
+  ChannelFsm,
+  changeState,
+  emit,
+  handleNewContract,
 } from './internal';
 import { Encoded } from '../utils/encoder';
 import { ContractCallReturnType } from '../apis/node';
@@ -130,7 +139,7 @@ export default class ChannelContract extends ChannelSpend {
       });
       return {
         handler: async (
-          _: Channel,
+          channel: Channel,
           message: ChannelMessage,
           state: ChannelState,
         ): Promise<ChannelFsm> => {
@@ -155,6 +164,7 @@ export default class ChannelContract extends ChannelSpend {
                 const addressKey = this._options.role === 'initiator'
                   ? 'initiatorId' : 'responderId';
                 const owner = this._options[addressKey];
+                handleNewContract(channel, message);
                 changeState(this, message2.params.data.state);
                 state2.resolve({
                   accepted: true,

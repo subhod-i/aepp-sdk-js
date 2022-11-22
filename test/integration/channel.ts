@@ -139,6 +139,8 @@ describe('Channel', () => {
     responderSign.resetHistory();
     initiatorSignTag.resetHistory();
     responderSignTag.resetHistory();
+    initiatorCh._contracts = [];
+    responderCh._contracts = [];
   });
 
   it('can open a channel', async () => {
@@ -863,6 +865,10 @@ describe('Channel', () => {
     });
     await Promise.all([waitForChannel(initiatorCh), waitForChannel(responderCh)]);
     contract = await aeSdkInitiatior.initializeContract({ sourceCode: contractSourceCode });
+    let emittedContractAddress = '';
+    initiatorCh.on('newContract', (address: Encoded.ContractAddress) => {
+      emittedContractAddress = address;
+    });
     const roundBefore = initiatorCh.round();
     assertNotNull(roundBefore);
     const callData = contract._calldata.encode('Identity', 'init', []);
@@ -896,8 +902,31 @@ describe('Channel', () => {
     );
     const { updates: [{ owner }] } = responderSignTag.lastCall.lastArg;
     // TODO: extract this calculation https://github.com/aeternity/aepp-sdk-js/issues/1619
-    expect(encodeContractAddress(owner, roundBefore + 1)).to.equal(result.address);
+    const encodedContractAddress = await encodeContractAddress(owner, roundBefore + 1);
+    expect(encodedContractAddress).to.equal(result.address);
+    expect(emittedContractAddress).to.equal(result.address);
+    expect(initiatorCh.contracts()).to.eql([result.address]);
+    expect(responderCh.contracts()).to.eql([result.address]);
     contractAddress = result.address;
+  });
+
+  it('can create multiple contracts', async () => {
+    await initiatorCh.createContract({
+      code: await contract.$compile(),
+      callData: contract._calldata.encode('Identity', 'init', []),
+      deposit: new BigNumber('10e18'),
+      vmVersion: 5,
+      abiVersion: 3,
+    }, initiatorSign);
+    await responderCh.createContract({
+      code: await contract.$compile(),
+      callData: contract._calldata.encode('Identity', 'init', []),
+      deposit: new BigNumber('10e18'),
+      vmVersion: 5,
+      abiVersion: 3,
+    }, responderSign);
+    expect(initiatorCh.contracts().length).to.eql(2);
+    expect(responderCh.contracts().length).to.eql(2);
   });
 
   it('can create a contract and reject', async () => {
@@ -912,6 +941,8 @@ describe('Channel', () => {
     }, initiatorSign);
     expect(initiatorCh.round()).to.equal(roundBefore);
     result.should.eql({ ...result, accepted: false });
+    expect(initiatorCh.contracts()).to.eql([]);
+    expect(responderCh.contracts()).to.eql([]);
   });
 
   it('can abort contract sign request', async () => {
@@ -927,6 +958,8 @@ describe('Channel', () => {
       async () => Promise.resolve(errorCode),
     );
     result.should.eql({ accepted: false });
+    expect(initiatorCh.contracts()).to.eql([]);
+    expect(responderCh.contracts()).to.eql([]);
   });
 
   it('can abort contract with custom error code', async () => {
@@ -943,6 +976,8 @@ describe('Channel', () => {
       errorCode: responderShouldRejectUpdate,
       errorMessage: 'user-defined',
     });
+    expect(initiatorCh.contracts()).to.eql([]);
+    expect(responderCh.contracts()).to.eql([]);
   });
 
   it('can get balances', async () => {

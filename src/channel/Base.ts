@@ -33,6 +33,7 @@ import {
   ChannelAction,
   ChannelStatus,
   ChannelFsm,
+  ChannelMessage,
 } from './internal';
 import { ChannelError } from '../utils/errors';
 import { Encoded } from '../utils/encoder';
@@ -78,7 +79,7 @@ export default class Channel {
 
   _fsmId?: Encoded.Bytearray;
 
-  _messageQueue: object[] = [];
+  _messageQueue: ChannelMessage[] = [];
 
   _isMessageQueueLocked = false;
 
@@ -97,6 +98,8 @@ export default class Channel {
   _options: ChannelOptions;
 
   _channelId?: Encoded.Channel;
+
+  _contracts: Encoded.ContractAddress[] = [];
 
   /**
    * @param options - Channel params
@@ -205,6 +208,13 @@ export default class Channel {
    */
   status(): ChannelStatus {
     return this._status;
+  }
+
+  /**
+   * Get current created contract addresses
+   */
+  contracts(): Encoded.ContractAddress[] {
+    return this._contracts;
   }
 
   /**
