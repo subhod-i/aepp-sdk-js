@@ -80,3 +80,11 @@ console.log(`Balance of ${recipient} (after): ${balanceAfter} aettos`);
 //  - If the recipient is the same account as the sender (default of the script if no arguments
 //    provided) the balance will be lower after transfer because a transaction `fee` has been
 //    paid to the miners.
+
+// ## 7. Transfer a fraction of your AE to another account
+// Instead of `spend` function you can use the `transferFunds` function
+// to transfer a fraction of your AE to another account
+const fraction = 1;
+// `fraction` * 100 = % of AE to be transfered (e.g. 0.5 for 50% or 1 for 100%)
+const transferTx = await aeSdk.transferFunds(fraction, recipient);
+console.log('Transaction mined', transferTx);
