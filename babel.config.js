@@ -9,6 +9,11 @@ module.exports = {
     '@babel/preset-typescript',
   ],
   plugins: [
-    ['@babel/plugin-transform-runtime', { corejs: 3 }],
+    [
+      '@babel/plugin-transform-runtime', { corejs: 3 },
+    ],
+    ['@babel/plugin-proposal-private-property-in-object'],
+    ['@babel/plugin-proposal-class-properties'],
+    ['@babel/plugin-proposal-private-methods'],
   ],
 };
